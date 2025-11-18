@@ -1,0 +1,592 @@
+{
+  "name": "SALES ORDER - MAPPING & INSERTING",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sales_order_one",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2304,
+        -848
+      ],
+      "id": "ea980a25-dc27-405c-ae3d-2fa4a545a4c7",
+      "name": "Webhook",
+      "webhookId": "030b812c-0c9b-427a-bba2-36afb8d20a7c"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "EXEC SBOLive_CCPI.dbo.PO_DETAILS \n  @PO_GLN = '{{ $json.delivery_location || $json.delivery_gln || $json.delivery_location_gln }}',\n  @GTIN = '{{ $json.gtin }}';"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        -1280,
+        -928
+      ],
+      "id": "f84aba92-e7f4-4eb1-854e-b56a48d4ea42",
+      "name": "GET SKU1",
+      "executeOnce": true,
+      "alwaysOutputData": false,
+      "credentials": {
+        "microsoftSql": {
+          "id": "RPzzhwl7vM19YWll",
+          "name": "INV .86"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1008,
+        -848
+      ],
+      "id": "6772cdf1-e47b-4497-9406-3d04ac048f15",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "content": "## Philippine Seven Corporation",
+        "height": 624,
+        "width": 2176
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2384,
+        -1184
+      ],
+      "id": "cf1cdb29-1ae6-453e-b9c1-e7a296d0e857",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nlet itemsArray = [];\n\nfor (const item of input) {\n  if (item.json.items) {\n    itemsArray = item.json.items;\n    break;\n  }\n}\n\nreturn itemsArray.map(obj => ({\n  json: obj\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        -928
+      ],
+      "id": "06b39eb7-ffe0-4164-96ad-623876fd5267",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nlet merged = {};\n\nfor (const item of input) {\n  if (item.json.headers) {\n    Object.assign(merged, item.json.headers);\n  }\n}\n\nreturn [\n  {\n    json: merged\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        -768
+      ],
+      "id": "1f4e82af-5641-4896-b409-b2d16e22ac69",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1744,
+        -848
+      ],
+      "id": "4e3ef6ed-30a7-4acd-8d32-fc0483b7900b",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -1280,
+        -1088
+      ],
+      "id": "01c01f1a-298c-46ab-9910-2de85c4c3046",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nlet merged = {};\n\nfor (const item of input) {\n  if (item.json.body) {\n    Object.assign(merged, item.json.body);\n  }\n}\n\nreturn [\n  {\n    json: merged\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2144,
+        -848
+      ],
+      "id": "36493a7e-3fb2-4fce-a0bb-2d7c4031f25f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "EXEC INV.dbo.INSERT_SALES_ORDER\n    @DELIVERY_ADDRESS   = '{{ String($json.Address || \"\").replace(/'/g,\"''\") }}',\n    @SKU                = '{{ String($json.SKU || \"\").replace(/'/g,\"''\") }}',\n    @DESCRIPTION        = '{{ String($json.description || \"\").replace(/'/g,\"''\") }}',\n    @QTY_SOLD           = '{{ String($json.quantity || \"\").replace(/'/g,\"''\") }}',\n    @SRP                = '{{ String($json.unit_price || \"\").replace(/'/g,\"''\") }}',\n    @ORDER_DATE         = '{{ String($json.delivery_date || \"\").replace(/'/g,\"''\") }}',\n    @ORDER_NUMBER       = '{{ String($json.order_number ?? \"\").replace(/'/g,\"''\") }}',\n    @CONTACT            = '{{ String($json.PO_GLN || \"\").replace(/'/g,\"''\") }}',\n    @CUSTOMER_NAME      = '{{ String($json.CUSTOMER_NAME || \"\").replace(/'/g,\"''\") }}',\n    @WAREHOUSE          = 'PICKLINE',\n    @CITY               = '{{ String($json.City || \"\").replace(/'/g,\"''\") }}',\n    @UOM                = '{{ String($json.UOM || \"\").replace(/'/g,\"''\") }}';\n"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        -800,
+        -848
+      ],
+      "id": "fac0e5e2-809e-4bd3-b5ab-1dbbb8e07d79",
+      "name": "Microsoft SQL2",
+      "credentials": {
+        "microsoftSql": {
+          "id": "RPzzhwl7vM19YWll",
+          "name": "INV .86"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1552,
+        -848
+      ],
+      "id": "6f3962c4-86fb-41b7-b505-ad209c35789c",
+      "name": "Loop Over Items1",
+      "alwaysOutputData": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sales_order_one",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2304,
+        -160
+      ],
+      "id": "ee56d457-5b17-4be9-8295-5940c7375368",
+      "name": "Webhook1",
+      "webhookId": "030b812c-0c9b-427a-bba2-36afb8d20a7c"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "EXEC SBOLive_CCPI.dbo.PO_DETAILS \n  @PO_GLN = '{{ $json.delivery_location || $json.delivery_gln || $json.delivery_location_gln }}',\n  @GTIN = '{{ $json.gtin }}';"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        -1280,
+        -240
+      ],
+      "id": "e548cef0-305f-43c1-a29a-fc9c789f273b",
+      "name": "GET SKU",
+      "executeOnce": true,
+      "alwaysOutputData": false,
+      "credentials": {
+        "microsoftSql": {
+          "id": "RPzzhwl7vM19YWll",
+          "name": "INV .86"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1008,
+        -160
+      ],
+      "id": "1849ff6f-e8fe-4d35-b582-e05b5c731767",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "content": "## SNACKEX",
+        "height": 624,
+        "width": 2176
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2384,
+        -496
+      ],
+      "id": "ca7a16be-64a8-4c18-aaf7-cf15c510490c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nlet itemsArray = [];\n\nfor (const item of input) {\n  if (item.json.items) {\n    itemsArray = item.json.items;\n    break;\n  }\n}\n\nreturn itemsArray.map(obj => ({\n  json: obj\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        -240
+      ],
+      "id": "0819c5f2-5538-4e77-878d-76ec71507645",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nlet merged = {};\n\nfor (const item of input) {\n  if (item.json.headers) {\n    Object.assign(merged, item.json.headers);\n  }\n}\n\nreturn [\n  {\n    json: merged\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        -80
+      ],
+      "id": "0aa965f1-e6ed-4d63-b0b9-ab9a5d84fc9d",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1744,
+        -160
+      ],
+      "id": "8a469332-e9a4-4b54-8e22-7ae571e1c0fa",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -1280,
+        -400
+      ],
+      "id": "eb3f2305-21df-4a8e-90e5-c869c6e0f809",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nlet merged = {};\n\nfor (const item of input) {\n  if (item.json.body) {\n    Object.assign(merged, item.json.body);\n  }\n}\n\nreturn [\n  {\n    json: merged\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2144,
+        -160
+      ],
+      "id": "b1d1e526-fae3-4f80-9158-644d0cb31e4c",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "EXEC INV.dbo.INSERT_SALES_ORDER\n    @DELIVERY_ADDRESS   = '{{ String($json.Address || \"\").replace(/'/g,\"''\") }}',\n    @SKU                = '{{ String($json.SKU || \"\").replace(/'/g,\"''\") }}',\n    @DESCRIPTION        = '{{ String($json.description || \"\").replace(/'/g,\"''\") }}',\n    @QTY_SOLD           = '{{ String($json.quantity || \"\").replace(/'/g,\"''\") }}',\n    @SRP                = '{{ String($json.unit_price || \"\").replace(/'/g,\"''\") }}',\n    @ORDER_DATE         = '{{ String($json.delivery_date || \"\").replace(/'/g,\"''\") }}',\n    @ORDER_NUMBER       = '{{ String($json.order_number ?? \"\").replace(/'/g,\"''\") }}',\n    @CONTACT            = '{{ String($json.PO_GLN || \"\").replace(/'/g,\"''\") }}',\n    @CUSTOMER_NAME      = '{{ String($json.CUSTOMER_NAME || \"\").replace(/'/g,\"''\") }}',\n    @WAREHOUSE          = 'PICKLINE',\n    @CITY               = '{{ String($json.City || \"\").replace(/'/g,\"''\") }}',\n    @UOM                = '{{ String($json.UOM || \"\").replace(/'/g,\"''\") }}';\n"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        -800,
+        -160
+      ],
+      "id": "797842a3-d642-494a-a11b-5b6e140b77f9",
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "RPzzhwl7vM19YWll",
+          "name": "INV .86"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1552,
+        -160
+      ],
+      "id": "78b464fc-4d1c-46cd-84ef-4ec2d59336e8",
+      "name": "Loop Over Items",
+      "alwaysOutputData": false,
+      "executeOnce": false
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GET SKU1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET SKU1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET SKU": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET SKU",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "81b63c71-396b-4b92-921e-4815246eba59",
+  "meta": {
+    "instanceId": "2cb527069d4d3ca52b3da3b2aacfac15f379254797865e09501859e37ba61ac9"
+  },
+  "id": "t42AkArcz4H3xSDV",
+  "tags": []
+}
