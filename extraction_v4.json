@@ -1,0 +1,2530 @@
+{
+  "name": "Extraction",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        272
+      ],
+      "id": "d5028045-ebae-408a-bb8e-9c5d16480eed",
+      "name": "Extract from File",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f2357c3c-7bac-489d-b00b-4b76c126ef88",
+              "name": "data",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        272
+      ],
+      "id": "ef455a13-65fb-4f36-b88f-151fd87e7351",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  let raw = item.json.output;\n\n  raw = raw.replace(/```json|```/g, '').trim();\n\n  let parsed;\n  try {\n    parsed = JSON.parse(raw);\n  } catch (error) {\n    parsed = { error: 'Invalid JSON format', details: error?.message, raw };\n  }\n\n  return {\n    json: parsed\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        480
+      ],
+      "id": "e9b80836-53ba-4dcd-b8f8-33105d6aee93",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -928,
+        -1600
+      ],
+      "id": "204c9368-e964-43f9-a9e1-df3e94b799ee",
+      "name": "OpenAI Chat Model",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        640
+      ],
+      "id": "18201b0a-5759-460f-b572-0afc4328417f",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "z8jWgbeOyLGnYTFs",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "extract",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2784,
+        -1600
+      ],
+      "id": "b1ffdd2a-2ff9-40ed-b2e4-5ec28e69724b",
+      "name": "Webhook1",
+      "webhookId": "98da41c7-fa71-4374-8d65-102db5b0607b",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        -1360,
+        -1616
+      ],
+      "id": "30a2acfd-a707-4722-b9d5-b1d8a96f8bfd",
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "RPzzhwl7vM19YWll",
+          "name": "INV .86"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1136,
+        -1616
+      ],
+      "id": "1a0a2d1a-b7ee-453a-a1b4-e8b100ec1a66",
+      "name": "Execute Workflow",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert data extraction and formatting engine.\n\n1. **TASK:** Your sole task is to analyze the provided text/data and extract all relevant information into a valid, clean, and concise **JSON object**.\n2. **OUTPUT REQUIREMENT:** You must output *only* the JSON object. Do not include any explanatory text, markdown notes, preamble, or any other conversation outside of the opening `{` and closing `}` of the JSON structure.\n3. **INSTRUCTIONS:** Analyze the data provided below and structure it appropriately in the JSON object.\n\n---\n**DATA TO EXTRACT:**\n{{$json.data}}\n---",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1696,
+        -1616
+      ],
+      "id": "98d91bc5-8009-422c-9c32-7301ecc86c76",
+      "name": "AI Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=1. **TASK:** Your sole task is to analyze the provided text/data and extract all relevant information into a valid, clean, and concise **JSON object**.\n2. **OUTPUT REQUIREMENT:** You must output *only* the JSON object. Do not include any explanatory text, markdown notes, preamble, or any other conversation outside of the opening `{` and closing `}` of the JSON structure.\n3. **INSTRUCTIONS:** Analyze the data provided below and structure it appropriately in the JSON object. **All similar properties must be normalized to a single, standardized key.**\n\n    * **Specific Standardization Rules:**\n        * Any form of **supplier code** or **ID** (e.g., `supplier id`, `vendor code`) must be standardized to the key **`supplier_code`**.\n        * Any form of **address** or **location** (e.g., `location`, `delivery_address`, `billing_location`) must be standardized to the key **`address`**.\n        * General fields (like `supplier_name`, `vendor`) should be standardized to the key **`supplier`**.\n\n    * **JSON Structure:**\n        * **`headers`:** A **single JSON object** containing the main document details (e.g., po_number, entry_date, `address`, `supplier_code`, `supplier`, totals).\n        * **`items`:** An **array of JSON objects** containing the line-item details (using standardized keys).\n\n---\n**DATA TO EXTRACT:**\n{{$json.data}}\n---",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -2016,
+        -1616
+      ],
+      "id": "75c5fd49-d395-433e-9e0c-34e992b47cb3",
+      "name": "AI Agent2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f786a965-8cf8-4a26-9ac2-e04f2b7ee28e",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        608
+      ],
+      "id": "2ea627a7-f9a1-46ec-b08e-4e0c7f925f3b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16a0605c-11a4-4bf7-9061-d614c0f40041",
+              "name": "path",
+              "value": "={{ $json.path }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1312,
+        496
+      ],
+      "id": "476cd451-2422-489a-94bc-6e4b0bfe593d",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1120,
+        496
+      ],
+      "id": "f0954b20-dbf4-457b-a628-52bb75585f61",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2032,
+        336
+      ],
+      "id": "667e53b5-7856-4ef0-877e-90899057d767",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        80,
+        832
+      ],
+      "id": "dabb0546-31a5-4f2f-b165-b961bc0a021c",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        352
+      ],
+      "id": "981094e5-7d10-4284-a3db-25e492a8e16d",
+      "name": "FTP3",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/SalesOrderExtracted/{{ $json.path.split('/').pop(); }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        352
+      ],
+      "id": "94b8c8e9-bc47-4fa3-81ad-36fd47ee08f3",
+      "name": "FTP6",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let path = null\nlet statusCode = null\nlet headers = null\nlet items = null\nlet message = null\nfor (const item of $input.all()) {\n    \n  if(item.json.statusCode){\n    statusCode = item.json.statusCode\n  }\n  \n  if(item.json.path){\n    path = item.json.path\n  }\n  \n  if(item.json.headers){\n    headers = {...item.json.headers}\n  }\n  \n  if(item.json.items){\n    items = item.json.items\n  }\n  \n  if(item.json.message){\n    message = item.json.message\n  }\n}\n\nreturn {\n  json: {\n    path: path,\n    statusCode: statusCode,\n    headers: headers,\n    items: items,\n    message: message\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        832
+      ],
+      "id": "69e57f4a-2255-4795-8c31-44a6d9ee4dcb",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2016,
+        64
+      ],
+      "id": "c46dd57f-e577-4d47-b8c9-61979b44893c",
+      "name": "Schedule Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        896
+      ],
+      "id": "53f31c81-948a-436c-b5ae-e987e354d716",
+      "name": "FTP4",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/ErrorFile/Invalid File Content - {{ $json.path.split('/').pop(); }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        896
+      ],
+      "id": "988fd68d-dc80-4f3c-875b-d0be9ee5bdbf",
+      "name": "FTP7",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "delete",
+        "path": "=/USERS/Distribution_PO/SalesOrder/{{$binary.data.fileName}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        608
+      ],
+      "id": "760b5b05-c5fa-4d3f-bb28-a4f6a7c2a651",
+      "name": "FTP5",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2cec16ab-4eba-4133-815a-ab3ad748fb40",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "46aee05a-08d9-4050-b7dd-212ad0ad4567",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "xlsx",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "a7265489-5181-48c3-9b8d-f03527b65cbb",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "xls",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "94c4d9bd-9b5f-41d4-a4e7-2dc7062ff5e3",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "ods",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1632,
+        336
+      ],
+      "id": "8a143695-d6c0-4e92-a090-4433c57e429f",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "content": "## List of File",
+        "height": 256,
+        "width": 752
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2128,
+        256
+      ],
+      "id": "8810f42c-4339-4596-8ca8-f27fd7cb005b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Invalid File Type",
+        "height": 256,
+        "width": 752
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2128,
+        544
+      ],
+      "id": "b90130b1-a15e-4316-b411-de57b20ae73f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Extracting",
+        "height": 816,
+        "width": 1936
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        256
+      ],
+      "id": "f6474658-76f9-4ec9-9429-1c0a3cc55413",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Move all processed files to the SalesOrderExtracted folder",
+        "height": 256,
+        "width": 816
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        272
+      ],
+      "id": "fe9baed4-2132-4b64-bd16-5daad477d446",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Delete the original file",
+        "height": 240,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        544
+      ],
+      "id": "1f84b92f-f07b-4b78-bb8c-81844dd20a47",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Process the data and insert it into the SAP database.",
+        "height": 720,
+        "width": 688
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3408,
+        -1456
+      ],
+      "id": "aa6c0111-4640-4608-a313-bd21cdbb9a9e",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Move all error files to the ErrorFile folder",
+        "height": 256,
+        "width": 816
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        800
+      ],
+      "id": "3c247664-e934-4aa6-9d24-bca77cca680a",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "list",
+        "path": "/USERS/Distribution_PO/SalesOrder"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -1840,
+        336
+      ],
+      "id": "d1714d64-d1a7-4b33-8162-508c02cf26ce",
+      "name": "GET FILES",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2000,
+        624
+      ],
+      "id": "b9a49ee5-f365-426f-a98e-ace61abb5849",
+      "name": "GET FILE",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/ErrorFile/Invalid File Type - {{ $json.path.split('/').pop(); }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -1824,
+        624
+      ],
+      "id": "51f8c22a-1677-4009-9ca8-77a7de5dc9cc",
+      "name": "SAVE FILE",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "delete",
+        "path": "=/USERS/Distribution_PO/SalesOrder/{{$binary.data.fileName}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -1632,
+        624
+      ],
+      "id": "d44a4777-0736-4f54-b358-9424f2bc5d48",
+      "name": "DELETE FILE",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -1104,
+        848
+      ],
+      "id": "77965032-8432-4152-b98b-dcdd68bf888f",
+      "name": "GET FILE1",
+      "credentials": {
+        "ftp": {
+          "id": "86pYrQVIVtG9IyiY",
+          "name": "FTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.headers.customer_name + $json.headers.supplier }}",
+                    "rightValue": "=SEVEN CORPORATION",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "922c2b2e-0d9f-4cf2-b7eb-6a2348c48a46"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9ed85f90-043e-478b-bb86-d55b4f916800",
+                    "leftValue": "={{ $json.headers.customer_name + $json.headers.supplier }}",
+                    "rightValue": "WATSONS",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        3488,
+        -1120
+      ],
+      "id": "07b40738-de5e-4cf7-b940-28b46b538df2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=1. **TASK:** Your sole task is to analyze the provided text/data and extract all relevant information into a valid, clean, and concise **JSON object**.\n2. **OUTPUT REQUIREMENT:** You must output *only* the JSON object. Do not include any explanatory text, markdown notes, preamble, or any other conversation outside of the opening `{` and closing `}` of the JSON structure.\n3. **INSTRUCTIONS:** Analyze the data provided below and structure the final output to always contain a `message` string and a numeric `statusCode` (either 200 for success or 500 for error).\n\n    * **VALIDATION RULE (500 Error Condition):** If essential document details (like supplier name/code OR PO number) cannot be found, or if the content appears to be a **screenshot** rather than extractable text, output the following structure:\n      ```json\n      {\n        \"message\": \"Invalid PDF Content: Essential details (Supplier/PO Number) are missing. Make sure the PDF does not contain screenshots of the details.\",\n        \"statusCode\": 500\n      }\n      ```\n      **Do not proceed with data extraction if this rule is met.**\n\n    * **Success Structure (200 Status Code):** If the data is valid, the JSON must contain the `message`, `statusCode`, and the extracted data under the keys `headers` and `items`.\n\n    * **Key Normalization Rules (If valid):** All similar properties must be normalized to a single, standardized key.\n        * Any form of **supplier code** or **ID** must be standardized to the key **`supplier_code`**.\n        * Any form of **address** or **location** must be standardized to the key **`address`**.\n        * General fields (like `supplier_name`, `vendor`) should be standardized to the key **`supplier`**.\n\n    * **JSON Structure (If valid):**\n      ```json\n      {\n        \"message\": \"Extraction successful.\",\n        \"statusCode\": 200,\n        \"headers\": {\n          // main document details like po_number, supplier, address, totals\n        },\n        \"items\": [\n          // array of line-item objects\n        ]\n      }\n      ```\n\n---\n**DATA TO EXTRACT:**\n{{$json.data}}\n---",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -816,
+        -1584
+      ],
+      "id": "04e0056b-a72d-4edc-bf8f-2846794b5cc5",
+      "name": "AI Agent3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        416
+      ],
+      "id": "9256eb37-3a7b-4932-aee3-bb2342e8d242",
+      "name": "Extract from File1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ec1692d0-91d0-40b2-90f2-b319f5304ba1"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "75e7cdca-2b1e-411f-980d-dc4043bb17b8",
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "xlsx",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0417f66a-2ff5-4579-8f70-65b2e93de451",
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "xls",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "018b26c2-a3a5-49c3-9661-a880b44f61f7",
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "ods",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -896,
+        464
+      ],
+      "id": "662bcbc2-75a2-4c97-80fe-ed86b4169c91",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "xls",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        576
+      ],
+      "id": "551c11c1-a10d-49ff-b0cc-0e5e428feb3b",
+      "name": "Extract from File2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "ods",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        736
+      ],
+      "id": "2af6c5e0-2a5d-4486-bb8c-6e67515ce647",
+      "name": "Extract from File3",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst data = items.map(item => item.json ?? item);\n\nreturn [\n  {\n    json: {\n      data: JSON.stringify(data)\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        576
+      ],
+      "id": "c3eef24b-d973-4d7f-81cf-2f3de1ed8c75",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=1. **TASK:** Your sole task is to analyze the provided text/data and extract all relevant information into a valid, clean, and concise **JSON object**.\n2. **OUTPUT REQUIREMENT:** You must output *only* the JSON object. Do not include any explanatory text, markdown notes, preamble, or any other conversation outside of the opening `{` and closing `}` of the JSON structure.\n3. **INSTRUCTIONS:** Analyze the data provided below and structure the final output to always contain a `message` string and a numeric `statusCode` (either 200 for success or 500 for error).\n\n    * **VALIDATION RULE (500 Error Condition):** If essential document details (like supplier name/code OR PO number) cannot be found, or if the content appears to be a **screenshot** rather than extractable text, output the following structure:\n      ```json\n      {\n        \"message\": \"Invalid PDF Content: Essential details (Supplier/PO Number) are missing. Make sure the PDF does not contain screenshots of the details.\",\n        \"statusCode\": 500\n      }\n      ```\n      **Do not proceed with data extraction if this rule is met.**\n\n    * **Success Structure (200 Status Code):** If the data is valid, the JSON must contain the `message`, `statusCode`, and the extracted data under the keys `headers` and `items`.\n\n    * **Key Normalization Rules (If valid):** All similar properties must be normalized to a single, standardized key.\n        * Any form of **supplier code** or **ID** must be standardized to the key **`supplier_code`**.\n        * Any form of **customer/company name**, **buyer**, or **recipient name** must be standardized to the key **`customer_name`**.\n        * Any form of **customer/recipient address** or **location** must be standardized to the key **`customer_address`**.\n        * General fields (like `supplier_name`, `vendor`) should be standardized to the key **`supplier`**.\n\n    * **JSON Structure (If valid):**\n      ```json\n      {\n        \"message\": \"Extraction successful.\",\n        \"statusCode\": 200,\n        \"headers\": {\n          // main document details like po_number, supplier, customer_name, customer_address, totals\n        },\n        \"items\": [\n          // array of line-item objects\n        ]\n      }\n      ```\n\n---\n**DATA TO EXTRACT:**\n{{$json.data}}\n---",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -704,
+        -1776
+      ],
+      "id": "86de5278-d90b-48ea-a4c1-3cd5d8c9cbbd",
+      "name": "AI Agent4",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.50.147:5670/webhook/sales_order_one",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3664,
+        -1280
+      ],
+      "id": "5366d93b-976d-4ee2-b0e1-9f7fa496c51d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.50.147:5678/webhook-test/030b812c-0c9b-427a-bba2-36afb8d20a7c",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3664,
+        -1104
+      ],
+      "id": "3e7a9a63-e769-42d7-821c-3946fe3fceb7",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=1. **TASK:** Your sole task is to analyze the provided text/data and extract all relevant information into a valid, clean, and concise **JSON object**.\n2. **OUTPUT REQUIREMENT:** You must output *only* the JSON object. Do not include any explanatory text, markdown notes, preamble, or any other conversation outside of the opening `{` and closing `}` of the JSON structure.\n3. **INSTRUCTIONS:** Analyze the data provided below and structure the final output to always contain a `message` string and a numeric `statusCode` (either 200 for success or 500 for error).\n\n    * **VALIDATION RULE (500 Error Condition):** If essential document details (like supplier name/code OR PO number) cannot be found, or if the content appears to be a **screenshot** rather than extractable text, output the following structure:\n      ```json\n      {\n        \"message\": \"Invalid PDF Content: Essential details (Supplier/PO Number) are missing. Make sure the PDF does not contain screenshots of the details.\",\n        \"statusCode\": 500\n      }\n      ```\n      **Do not proceed with data extraction if this rule is met.**\n\n    * **Success Structure (200 Status Code):** If the data is valid, the JSON must contain the `message`, `statusCode`, and the extracted data under the keys `headers` and `items`.\n\n    * **Key Normalization Rules (If valid):** All similar properties must be normalized to a single, standardized key.\n        * Any form of **supplier code** or **ID** must be standardized to the key **`supplier_code`**.\n        * Any form of **supplier Tax ID**, VAT, or other national tax/registration number must be standardized to the key **`supplier_tax_id`**.\n        * Any form of **customer/company name**, **buyer**, or **recipient name** must be standardized to the key **`customer_name`**.\n        * Any form of **customer/recipient address** or **location** must be standardized to the key **`customer_address`**.\n        * Any form of **buyer/customer GLN (Global Location Number)** must be standardized to the key **`customer_gln`**.\n        * Any form of **customer Tax ID**, VAT, or other national tax/registration number must be standardized to the key **`customer_tax_id`**.\n        * General fields (like `supplier_name`, `vendor`) should be standardized to the key **`supplier`**.\n\n    * **JSON Structure (If valid):**\n      ```json\n      {\n        \"message\": \"Extraction successful.\",\n        \"statusCode\": 200,\n        \"headers\": {\n          // main document details like po_number, supplier, supplier_code, supplier_tax_id, customer_name, customer_address, customer_gln, customer_tax_id, totals\n        },\n        \"items\": [\n          // array of line-item objects\n        ]\n      }\n      ```\n\n---\n**DATA TO EXTRACT:**\n{{$json.data}}\n---",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -448,
+        -1648
+      ],
+      "id": "5e95322a-d493-407b-b95f-b9c5e854014a",
+      "name": "AI Agent5",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=1. TASK: Your sole task is to analyze the provided text/data and extract all relevant information into a valid, clean, and concise JSON object.\n\n2. OUTPUT REQUIREMENT: You must output only the JSON object. Do not include any explanatory text, markdown notes, preamble, or any other conversation outside of the opening { and closing } of the JSON structure.\n\n3. INSTRUCTIONS: Analyze the data provided below and structure the final output so it always contains a message string and a numeric statusCode (either 200 for success or 500 for error).\n\nVALIDATION RULE (500 Error Condition):\nIf essential document details (such as supplier name/code OR PO number) cannot be found, OR if the content appears to be a screenshot instead of extractable text, you must output this exact JSON:\n\n{\n  \"message\": \"Invalid PDF Content: Essential details (Supplier/PO Number) are missing. Make sure the PDF does not contain screenshots of the details.\",\n  \"statusCode\": 500\n}\n\nStop immediately — do not continue extraction if this rule is triggered.\n\nSUCCESS STRUCTURE (200 Status Code):\nIf the data is valid, return a JSON object containing:\n- \"message\": \"Extraction successful.\"\n- \"statusCode\": 200\n- \"headers\" → extracted header-level data\n- \"items\" → array of extracted line items\n\nKEY NORMALIZATION RULES (If valid):\n\nNormalize all similar fields to these standard keys:\n\nsupplier → Any form of supplier/vendor name\nsupplier_code → Any form of supplier code, ID, vendor ID\nsupplier_tax_id → VAT, TIN, tax number of supplier\ncustomer_name → Customer/company/buyer/recipient name\ncustomer_address → Customer/recipient/buyer address or location\ncustomer_gln → Any form of customer/buyer GLN (Global Location Number)\ncustomer_tax_id → VAT, TIN, tax number of customer\n\nORDER NUMBER NORMALIZATION RULE:\nAny of the following must always be normalized to the key order_number:\nDocument No\nDocument Number\nDocument #\nDocument ID\nDoc No\nDoc Number\nOrder Number\nOrder No\nOrder ID\nOrder Reference\nAny variation referring to a document/order identifier\n\nYou may include additional normalized keys as needed (e.g., po_number, invoice_number, totals, currency, delivery_date, etc.).\n\nJSON STRUCTURE (FOR VALID DATA):\n\n{\n  \"message\": \"Extraction successful.\",\n  \"statusCode\": 200,\n  \"headers\": {\n    // normalized fields like:\n    // order_number, po_number, supplier, supplier_code, supplier_tax_id,\n    // customer_name, customer_address, customer_gln, customer_tax_id,\n    // order_date, delivery_date, totals, etc.\n  },\n  \"items\": [\n    // array of extracted line item objects\n  ]\n}\n\nDATA TO EXTRACT:\n{{$json.data}}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -512,
+        -1456
+      ],
+      "id": "9ff75a28-ac53-45fa-ad45-18f006d3540a",
+      "name": "AI Agent6",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4a0f0c1c-e315-474b-bdcb-41e281e31a33",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        -416
+      ],
+      "id": "760600bf-14a1-4854-8978-3917681d455a",
+      "name": "If2",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "USE INV;\n\nINSERT INTO SALESORDERPAYLOAD (\n    CUSTOMER_NAME,\n    SUPPLIER_NAME,\n    PAYLOAD\n)\nVALUES (\n    '{{ $json.CUSTOMER_NAME }}',\n    '{{ $json.SUPPLIER_NAME }}',\n    '{{ $json.PAYLOAD }}'\n);\n"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        1824,
+        -32
+      ],
+      "id": "20c9be7e-c9c9-407d-b666-fdfd184efcf9",
+      "name": "Microsoft SQL2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftSql": {
+          "id": "RPzzhwl7vM19YWll",
+          "name": "INV .86"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1024,
+        -32
+      ],
+      "id": "4fb8b98f-1502-4cb5-b9ca-7c157c245b82",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.50.147:5678/webhook-test/payload",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1184,
+        -1472
+      ],
+      "id": "3cfdbf8f-582d-4e3c-a438-1f09969ca117",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -240,
+        480
+      ],
+      "id": "043e964a-f6dd-469c-9982-832ba973eed6",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = []\nfor (const item of $input.all()) {\n  data.push(item.json)\n}\n\nreturn {\n  json: {\n    matched_fields: JSON.stringify(data)\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        272
+      ],
+      "id": "65f661ce-0c58-45a1-a700-46d4fd2546ac",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4a5994f0-ba4c-428f-8ad1-2baa0fc37509",
+              "name": "extracted",
+              "value": "={{ JSON.stringify($json) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        -592
+      ],
+      "id": "1164cfb4-81fd-4fc6-9efa-7802eab03e6f",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "==1. TASK: Your sole task is to analyze the provided text/data and extract all relevant information into a valid, clean, and concise JSON object.\n\n2. OUTPUT REQUIREMENT: You must output only the JSON object. Do not include any explanatory text, markdown notes, preamble, or any other conversation outside of the opening { and closing } of the JSON structure.\n\n3. INSTRUCTIONS: Analyze the data provided below and structure the final output so it always contains a message string and a numeric statusCode (either 200 for success or 500 for error).\n\nVALIDATION RULE (500 Error Condition):\nIf essential document details (such as supplier name/code OR PO number) cannot be found, OR if the content appears to be a screenshot instead of extractable text, you must output this exact JSON:\n\n{\n  \"message\": \"Invalid PDF Content: Essential details (Supplier/PO Number) are missing. Make sure the PDF does not contain screenshots of the details.\",\n  \"statusCode\": 500\n}\n\nStop immediately — do not continue extraction if this rule is triggered.\n\nSUCCESS STRUCTURE (200 Status Code):\nIf the data is valid, return a JSON object containing:\n- \"message\": \"Extraction successful.\"\n- \"statusCode\": 200\n- \"headers\" → extracted header-level data\n- \"items\" → array of extracted line items\n\nKEY NORMALIZATION RULES (If valid):\n\nNormalize all similar fields to these standard keys:\n\nsupplier → Any form of supplier/vendor name  \nsupplier_code → Any form of supplier code, ID, vendor ID  \nsupplier_tax_id → VAT, TIN, tax number of supplier  \ncustomer_name → Customer/company/buyer/recipient name  \ncustomer_address → Customer/recipient/buyer address or location  \ncustomer_gln → Any form of customer/buyer GLN (Global Location Number)  \ncustomer_tax_id → VAT, TIN, tax number of customer  \n\nHERE THE NEEDED EXTRACTED FIELDS THAT SHOULD BE ASSIGNED TO ORIGINAL FIELDS:\n{{ $json.matched_fields }}\n\nDELIVERY LOCATION GLN NORMALIZATION RULE:\nAny field referring to a delivery location GLN must always be normalized to:\n- \"delivery_location\"  \nOR  \n- \"buyer_gln\"  \nChoose based on context of the extracted data.\n\nORDER NUMBER NORMALIZATION RULE:\nAny of the following must always be normalized to the key order_number:\nDocument No  \nDocument Number  \nDocument #  \nDocument ID  \nDoc No  \nDoc Number  \nOrder Number  \nOrder No  \nOrder ID  \nOrder Reference  \nAny variation referring to a document/order identifier\n\nYou may include additional normalized keys as needed (e.g., po_number, invoice_number, currency, delivery_date, etc.) — but DO NOT include totals or any total-related fields.\n\nJSON STRUCTURE (FOR VALID DATA):\n\n{\n  \"message\": \"Extraction successful.\",\n  \"statusCode\": 200,\n  \"headers\": {\n    // normalized fields like:\n    // order_number, po_number, supplier, supplier_code, supplier_tax_id,\n    // customer_name, customer_address, customer_gln, customer_tax_id,\n    // order_date, delivery_date, currency, delivery_location, buyer_gln, etc.\n  },\n  \"items\": [\n    // array of extracted line item objects (NO totals)\n  ]\n}\n\nDATA TO EXTRACT:\n{{$json.data}}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -64,
+        480
+      ],
+      "id": "9568d4d9-5b07-466a-948d-75ac26766c80",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=1. TASK: Your sole task is to analyze the provided text/data and extract all relevant information into a valid, clean, and concise JSON object.\n\n2. OUTPUT REQUIREMENT: You must output only the JSON object. Do not include any explanatory text, markdown notes, preamble, or any other conversation outside of the opening { and closing } of the JSON structure.\n\n3. INSTRUCTIONS: Analyze the data provided below and structure the final output so it always contains a message string and a numeric statusCode (either 200 for success or 500 for error).\n\nVALIDATION RULE (500 Error Condition):\nIf essential document details (such as supplier name/code OR PO number) cannot be found, OR if the content appears to be a screenshot instead of extractable text, you must output this exact JSON:\n\n{\n  \"message\": \"Invalid PDF Content: Essential details (Supplier/PO Number) are missing. Make sure the PDF does not contain screenshots of the details.\",\n  \"statusCode\": 500\n}\n\nStop immediately — do not continue extraction if this rule is triggered.\n\nSUCCESS STRUCTURE (200 Status Code):\nIf the data is valid, return a JSON object containing:\n- \"message\": \"Extraction successful.\"\n- \"statusCode\": 200\n- \"headers\" → extracted header-level data\n- \"items\" → array of extracted line items\n\nKEY NORMALIZATION RULES (If valid):\n\nNormalize all similar fields to these standard keys:\n\nsupplier → Any form of supplier/vendor name  \nsupplier_code → Any form of supplier code, ID, vendor ID  \nsupplier_tax_id → VAT, TIN, tax number of supplier  \ncustomer_name → Customer/company/buyer/recipient name  \ncustomer_address → Customer/recipient/buyer address or location  \ncustomer_gln → Any form of customer/buyer GLN (Global Location Number)  \ncustomer_tax_id → VAT, TIN, tax number of customer  \n\nHERE THE NEEDED EXTRACTED FIELDS THAT SHOULD BE ASSIGN TO ORIGINAL FIELDS\n{{ $json.matched_fields }}\n\nDELIVERY LOCATION GLN NORMALIZATION RULE:\nAny field referring to a delivery location GLN must always be normalized to:\n- \"delivery_location\"  \nOR  \n- \"buyer_gln\"  \nChoose based on context of the extracted data.\n\nORDER NUMBER NORMALIZATION RULE:\nAny of the following must always be normalized to the key order_number:\nDocument No  \nDocument Number  \nDocument #  \nDocument ID  \nDoc No  \nDoc Number  \nOrder Number  \nOrder No  \nOrder ID  \nOrder Reference  \nAny variation referring to a document/order identifier\n\nYou may include additional normalized keys as needed (e.g., po_number, invoice_number, currency, delivery_date, etc.) — but DO NOT include totals or any total-related fields.\n\nJSON STRUCTURE (FOR VALID DATA):\n\n{\n  \"message\": \"Extraction successful.\",\n  \"statusCode\": 200,\n  \"headers\": {\n    // normalized fields like:\n    // order_number, po_number, supplier, supplier_code, supplier_tax_id,\n    // customer_name, customer_address, customer_gln, customer_tax_id,\n    // order_date, delivery_date, currency, delivery_location, buyer_gln, etc.\n  },\n  \"items\": [\n    // array of extracted line item objects (NO totals)\n  ]\n}\n\nDATA TO EXTRACT:\n{{$json.data}}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -80,
+        -1600
+      ],
+      "id": "b2c61916-7721-4b68-a554-c75ba40f2145",
+      "name": "AI Agent7"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1f23abc3-3423-460e-a302-9c8cf04e8dee",
+              "name": "headers",
+              "value": "={{ $json.headers }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        -112
+      ],
+      "id": "c7fcd0fc-3d8f-42a8-8304-47456ba5f37f",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2ab87b90-84b5-481b-b159-26afa0aef712",
+              "name": "items",
+              "value": "={{ $json.items }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        64
+      ],
+      "id": "0ebdbf4e-0ed3-4d53-bc25-f49a72977ec2",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1424,
+        -32
+      ],
+      "id": "8d737167-0bb6-4c1e-aa25-fefe8010199d",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "jsCode": "let payload = null;\nlet customer_name = null;\nlet supplier_name = null;\n\nfor (const item of $input.all()) {\n  payload = JSON.stringify({\n    headers: { ...item.json.headers },\n    items: item.json.items\n  }).replace(/'/g, \"''\");;\n\n  customer_name = item.json.headers.customer_name;\n  supplier_name = item.json.headers.supplier;\n}\n\nreturn [\n  {\n    json: {\n      CUSTOMER_NAME: customer_name,\n      SUPPLIER_NAME: supplier_name,\n      PAYLOAD: payload\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        -32
+      ],
+      "id": "33f1dc3a-51de-4d5c-8120-207e734ade77",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT U_ClientField AS EXTRACTED_FIELD, U_StagingField AS ORIG_FIELD FROM z_TEST08142024CCPI.DBO.[@CLIENTFIELDMAPPING]"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        272
+      ],
+      "id": "2ceb024a-e21e-45ca-934a-841dcd28b916",
+      "name": "MAPPING",
+      "credentials": {
+        "microsoftSql": {
+          "id": "RPzzhwl7vM19YWll",
+          "name": "INV .86"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        -400
+      ],
+      "id": "02e3eb16-68db-439e-b889-98f09daa71cc",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "z8jWgbeOyLGnYTFs",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=I understand. You want to modify the prompt so that if a key specified in the template mapping is missing from the extracted data, it **never** returns `null`.\n\nSince you state it will **always** have a value, the LLM should be instructed to handle this situation by skipping the field entirely, or by using an empty string (`\"\"`) if the target structure must be maintained, as a key that \"always has value\" suggests it should not be absent.\n\nHere is the revised, ready-to-copy-paste prompt, where I've changed Rule 3 to return an **empty string** (`\"\"`) for missing keys, which is a safer default than `null` in many systems:\n\n```\nYou are a specialized JSON transformation engine. Your sole task is to generate the **Final Transformed JSON** object by mapping the keys from the **Extracted JSON (Source Data)** to the structure defined by the **Payload Template (Target Structure/Mapping)**.\n\n**Rules to strictly follow:**\n1.  **Mapping:** The value in the Payload Template is the key to look up in the Extracted JSON.\n2.  **Static Value:** If the value in the Payload Template is a hardcoded string or number (i.e., not a key from the extracted data), use it as the final value.\n3.  **Missing Data:** If a key specified in the template mapping does not exist in the extracted JSON, the resulting field should be included with a value of an **empty string (`\"\"`)**, as the data is guaranteed to have a value.\n4.  **Recursion:** Apply these rules recursively to nested objects and arrays.\n\n**EXTRACTED JSON (Source Data):**\n{{ $json.extracted }}\n\n**PAYLOAD TEMPLATE (Target Structure/Mapping):**\n{{$json.payload_template}}\n\n**INSTRUCTION:** Based on the data above and the rules, generate ONLY the **FINAL TRANSFORMED JSON** object. Do not include any explanation, introductory text, or concluding remarks. The output must be a single, valid JSON object enclosed in a Markdown code block.\n```",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2176,
+        -576
+      ],
+      "id": "ec904535-b282-484d-87d6-596cb925a1f3",
+      "name": "AI Agent8"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1968,
+        -576
+      ],
+      "id": "52bd0057-7cfe-4476-83b6-4bd8683bb6d8",
+      "name": "Merge4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4a5994f0-ba4c-428f-8ad1-2baa0fc37509",
+              "name": "payload_template",
+              "value": "={{ JSON.stringify($json) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1968,
+        -432
+      ],
+      "id": "059c6d7e-dd1a-414b-9c05-16cd3a465c6d",
+      "name": "Edit Fields6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  let raw = item.json.output;\n\n  raw = raw.replace(/```json|```/g, '').trim();\n\n  let parsed;\n  try {\n    parsed = JSON.parse(raw);\n  } catch (error) {\n    parsed = { error: 'Invalid JSON format', details: error?.message, raw };\n  }\n\n  return {\n    json: parsed\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2480,
+        -576
+      ],
+      "id": "63763244-0ecc-47a6-8ba8-a5d7d0b8541a",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7fa4f26e-cc70-43cd-81db-30c753075b60",
+              "name": "file",
+              "value": "={{ {filename: $binary.data.fileName } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1632,
+        352
+      ],
+      "id": "81809f91-94ce-43e6-967f-21319229fc76",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "USE INV;\n\nSELECT * FROM SALESORDERPAYLOAD \n\nWHERE \n( \n  CUSTOMER_NAME = '{{ $json.headers.customer_name }}' \n  AND SUPPLIER_NAME = '{{ $json.headers.supplier }}' \n) \n  \nOR \n  \n( \n  CUSTOMER_NAME = '{{ $json.headers.supplier }}' \n  AND SUPPLIER_NAME = '{{ $json.headers.customer_name }}' \n);\n"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        -416
+      ],
+      "id": "a6deb4c4-f5d3-4da8-92c0-c04dc0fffbc9",
+      "name": "PAYLOAD TEMPLATE",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftSql": {
+          "id": "RPzzhwl7vM19YWll",
+          "name": "INV .86"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let data = {};\n\nfor (const item of $input.all()) {\n  if (item.json.PAYLOAD) {\n    const payload = item.json.PAYLOAD;\n\n    // If payload is a string → parse\n    if (typeof payload === \"string\") {\n      try {\n        data = JSON.parse(payload);\n      } catch (err) {\n        throw new Error(\"Invalid JSON in PAYLOAD: \" + err.message);\n      }\n    }\n\n    // If already an object → use directly\n    else if (typeof payload === \"object\") {\n      data = payload;\n    }\n  }\n}\n\nreturn {\n  json: {\n    headers: data.headers || null,\n    items: data.items || null\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        -576
+      ],
+      "id": "914fb3ae-c53e-48a0-a4ae-a7932eabea03",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.50.147:5670/webhook-test/sales_order_one",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3568,
+        -944
+      ],
+      "id": "37246f52-855f-4907-8797-1a92277b7130",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2480,
+        336
+      ],
+      "id": "b13a8325-3c00-4555-94ca-b75ce8277a24",
+      "name": "Merge5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3744,
+        -912
+      ],
+      "id": "ae5ed372-fb2f-49b3-847b-da7eddaf1955",
+      "name": "Edit Fields7"
+    },
+    {
+      "parameters": {
+        "jsCode": "let headers = null\nlet items = null\nlet filename = null\nfor (const item of $input.all()) {\n  headers = item.json.headers\n  items = item.json.items\n  filename = item.json.file.filename\n}\n\nreturn {\n  json: {\n    headers: {\n      ...headers,\n      filename: filename\n    },\n\n    items: items\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        336
+      ],
+      "id": "551a49d0-db1a-4f2e-b67d-7251021f623e",
+      "name": "Code in JavaScript7"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "EXEC SBOLive_CCPI.dbo.PO_DETAILS \n  @PO_GLN = '{{ $json.delivery_location || $json.delivery_gln || $json.delivery_location_gln }}',\n  @GTIN = '{{ $json.gtin || $json.sku || $json.SKU }}'"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        3440,
+        256
+      ],
+      "id": "d33e8445-9462-41e2-aae5-3c33bb78c78b",
+      "name": "GET SKU1",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftSql": {
+          "id": "RPzzhwl7vM19YWll",
+          "name": "INV .86"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3248,
+        336
+      ],
+      "id": "fc1f44a0-a0d3-4ee6-91f7-6e88fc1ab375",
+      "name": "Loop Over Items1",
+      "alwaysOutputData": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3792,
+        336
+      ],
+      "id": "bac6d073-0c99-4812-b372-3ee9ed042fc4",
+      "name": "Merge6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nlet itemsArray = [];\n\nfor (const item of input) {\n  if (item.json.items) {\n    itemsArray = item.json.items;\n    break;\n  }\n}\n\nreturn itemsArray.map(obj => ({\n  json: obj\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2848,
+        256
+      ],
+      "id": "a418edbd-e4b8-457e-9fc4-14682a4b5a3a",
+      "name": "Code in JavaScript8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nlet merged = {};\n\nfor (const item of input) {\n  if (item.json.headers) {\n    Object.assign(merged, item.json.headers);\n  }\n}\n\nreturn [\n  {\n    json: merged\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2848,
+        416
+      ],
+      "id": "49467ce8-72fa-4b02-bcb8-030413de4b75",
+      "name": "Code in JavaScript9"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3056,
+        336
+      ],
+      "id": "7582b5c1-905d-48e9-8790-19b82c95f42d",
+      "name": "Merge7"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nlet merged = {};\n\nfor (const item of input) {\n  if (item.json.body) {\n    Object.assign(merged, item.json.body);\n  }\n}\n\nreturn [\n  {\n    json: merged\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3936,
+        -896
+      ],
+      "id": "3d0fb088-939e-46fa-ae31-fd212fe31538",
+      "name": "Code in JavaScript10"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "EXEC PreProd_DB.dbo.insert_sales_order\n    @DELIVERY_ADDRESS   = '{{ String($json.Address || \"\").replace(/'/g,\"''\") }}',\n    @SKU                = '{{ String($json.SKU || \"\").replace(/'/g,\"''\") }}',\n    @DESCRIPTION        = '{{ String($json.description || \"\").replace(/'/g,\"''\") }}',\n    @QTY_SOLD           = '{{ String($json.quantity || \"\").replace(/'/g,\"''\") }}',\n    @SRP                = '{{ String($json.unit_price || \"\").replace(/'/g,\"''\") }}',\n    @ORDER_DATE         = '{{ String($json.delivery_date || \"\").replace(/'/g,\"''\") }}',\n    @ORDER_NUMBER       = '{{ String($json.order_number ?? \"\").replace(/'/g,\"''\") }}',\n    @CONTACT            = '{{ String($json.PO_GLN || \"\").replace(/'/g,\"''\") }}',\n    @CUSTOMER_NAME      = '{{ String($json.CUSTOMER_NAME || \"\").replace(/'/g,\"''\") }}',\n    @WAREHOUSE          = 'PICKLINE',\n    @CITY               = '{{ String($json.City || \"\").replace(/'/g,\"''\") }}',\n    @UOM                = '{{ String($json.UOM || \"\").replace(/'/g,\"''\") }}',\n    @FILE_NAME          = '{{ String($json.filename || \"\").replace(/'/g,\"''\") }}';\n"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        4000,
+        336
+      ],
+      "id": "2093a37d-267e-4190-80a9-977f451150eb",
+      "name": "Microsoft SQL3",
+      "credentials": {
+        "microsoftSql": {
+          "id": "XKlmWToTMEHp6Ig2",
+          "name": "PreProd_DB .26"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## ALIGN PROPERTY NAME BASED ON PAYLOAD TEMPLATE",
+        "height": 928,
+        "width": 2160
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -720
+      ],
+      "id": "e6fc6492-d330-416b-9656-d875d7583107",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## INSERT & VALIDATE",
+        "height": 496,
+        "width": 2208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        224
+      ],
+      "id": "d9e99cdb-718c-4fed-8b9b-c90da661aa6f",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "23c194fb-7877-4f8a-b2b0-ad0a8f2008e3",
+              "leftValue": "={{$json}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3600,
+        256
+      ],
+      "id": "1aa3f3f1-a423-4204-9f4c-73ecf509bb53",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "=/USERS/Distribution_PO/SalesOrderExtracted/{{ $json.filename }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        3792,
+        560
+      ],
+      "id": "fa8a5eac-5e70-4e47-89e6-15f44b0a7a12",
+      "name": "FTP",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/ErrorFile/Required Mapping or Missing Sku - {{ $binary.data.fileName }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        3984,
+        560
+      ],
+      "id": "756c4342-6f72-4b16-a953-251aa485cf32",
+      "name": "FTP8",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "delete",
+        "path": "=/USERS/Distribution_PO/SalesOrderExtracted/{{$binary.data.fileName}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        4176,
+        560
+      ],
+      "id": "33f8538e-7080-49f8-95a2-1afff1e1a678",
+      "name": "FTP9",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3600,
+        560
+      ],
+      "id": "6eccca24-adaa-4f3f-8520-4d8f4cc0db01",
+      "name": "Merge8"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "MAPPING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        []
+      ]
+    },
+    "Microsoft SQL": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "PAYLOAD TEMPLATE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FTP3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "GET FILE1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "GET FILES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP6": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FTP5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP3": {
+      "main": [
+        [
+          {
+            "node": "FTP6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP4": {
+      "main": [
+        [
+          {
+            "node": "FTP7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP7": {
+      "main": [
+        [
+          {
+            "node": "FTP5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET FILE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FILES": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FILE": {
+      "main": [
+        [
+          {
+            "node": "SAVE FILE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SAVE FILE": {
+      "main": [
+        [
+          {
+            "node": "DELETE FILE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FILE1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "MAPPING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL2": {
+      "main": [
+        []
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MAPPING": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent8",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields6": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent8": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PAYLOAD TEMPLATE": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP5": {
+      "main": [
+        []
+      ]
+    },
+    "Merge5": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript7": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript8",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET SKU1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "GET SKU1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge6": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript8": {
+      "main": [
+        [
+          {
+            "node": "Merge7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript9": {
+      "main": [
+        [
+          {
+            "node": "Merge7",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge7": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript10": {
+      "main": [
+        []
+      ]
+    },
+    "Microsoft SQL3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Merge8",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP": {
+      "main": [
+        [
+          {
+            "node": "FTP8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP8": {
+      "main": [
+        [
+          {
+            "node": "FTP9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge8": {
+      "main": [
+        [
+          {
+            "node": "FTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "126f23de-1190-48be-a340-c80bb5fbf754",
+  "meta": {
+    "instanceId": "2cb527069d4d3ca52b3da3b2aacfac15f379254797865e09501859e37ba61ac9"
+  },
+  "id": "iobiJOg63IkhitWu",
+  "tags": []
+}
