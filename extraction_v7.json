@@ -1,0 +1,2298 @@
+{
+  "name": "Extraction",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "334ff2a3-b72b-43bc-95d5-26e0cc83e030",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        672
+      ],
+      "id": "2ea627a7-f9a1-46ec-b08e-4e0c7f925f3b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16a0605c-11a4-4bf7-9061-d614c0f40041",
+              "name": "path",
+              "value": "={{ $json.path }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2208,
+        512
+      ],
+      "id": "476cd451-2422-489a-94bc-6e4b0bfe593d",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2016,
+        512
+      ],
+      "id": "f0954b20-dbf4-457b-a628-52bb75585f61",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        352
+      ],
+      "id": "667e53b5-7856-4ef0-877e-90899057d767",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "=/USERS/Distribution_PO/SalesOrder/{{ $json.filename }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        544,
+        416
+      ],
+      "id": "981094e5-7d10-4284-a3db-25e492a8e16d",
+      "name": "FTP3",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/SalesOrderExtracted/{{ $binary.data.fileName.split('/').pop(); }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        752,
+        416
+      ],
+      "id": "94b8c8e9-bc47-4fa3-81ad-36fd47ee08f3",
+      "name": "FTP6",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        560,
+        960
+      ],
+      "id": "53f31c81-948a-436c-b5ae-e987e354d716",
+      "name": "FTP4",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/ErrorFile/Invalid File Content - {{ $json.path.split('/').pop(); }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        752,
+        960
+      ],
+      "id": "988fd68d-dc80-4f3c-875b-d0be9ee5bdbf",
+      "name": "FTP7",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "delete",
+        "path": "=/USERS/Distribution_PO/SalesOrder/{{$binary.data.fileName}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        672
+      ],
+      "id": "760b5b05-c5fa-4d3f-bb28-a4f6a7c2a651",
+      "name": "FTP5",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2cec16ab-4eba-4133-815a-ab3ad748fb40",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "19512ac2-4248-46eb-9ac2-c0116d80775f",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "htm",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "46aee05a-08d9-4050-b7dd-212ad0ad4567",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "xlsx",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "a7265489-5181-48c3-9b8d-f03527b65cbb",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "xls",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "94c4d9bd-9b5f-41d4-a4e7-2dc7062ff5e3",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "ods",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "8bb769bf-757b-4e96-a1dd-c2ee6ed13a8f",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "png",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "30be7491-7657-4cd3-a38c-c6e71bd0a00a",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "jpg",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2528,
+        352
+      ],
+      "id": "8a143695-d6c0-4e92-a090-4433c57e429f",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "content": "## List of File",
+        "height": 256,
+        "width": 752
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3024,
+        272
+      ],
+      "id": "8810f42c-4339-4596-8ca8-f27fd7cb005b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Invalid File Type",
+        "height": 256,
+        "width": 752
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3024,
+        560
+      ],
+      "id": "b90130b1-a15e-4316-b411-de57b20ae73f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Extracting",
+        "height": 1008,
+        "width": 2512
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2240,
+        112
+      ],
+      "id": "f6474658-76f9-4ec9-9429-1c0a3cc55413",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Move all processed files to the SalesOrderExtracted folder",
+        "height": 256,
+        "width": 816
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        352,
+        336
+      ],
+      "id": "fe9baed4-2132-4b64-bd16-5daad477d446",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Delete the original file",
+        "height": 240,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        832,
+        608
+      ],
+      "id": "1f84b92f-f07b-4b78-bb8c-81844dd20a47",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Move all error files to the ErrorFile folder",
+        "height": 256,
+        "width": 816
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        352,
+        864
+      ],
+      "id": "3c247664-e934-4aa6-9d24-bca77cca680a",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "list",
+        "path": "/USERS/Distribution_PO/SalesOrder"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2736,
+        352
+      ],
+      "id": "d1714d64-d1a7-4b33-8162-508c02cf26ce",
+      "name": "GET FILES",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2896,
+        640
+      ],
+      "id": "b9a49ee5-f365-426f-a98e-ace61abb5849",
+      "name": "GET FILE",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/ErrorFile/Invalid File Type - {{ $json.path.split('/').pop(); }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2720,
+        640
+      ],
+      "id": "51f8c22a-1677-4009-9ca8-77a7de5dc9cc",
+      "name": "SAVE FILE",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "delete",
+        "path": "=/USERS/Distribution_PO/SalesOrder/{{$binary.data.fileName}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2528,
+        640
+      ],
+      "id": "d44a4777-0736-4f54-b358-9424f2bc5d48",
+      "name": "DELETE FILE",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -1728,
+        464
+      ],
+      "id": "77965032-8432-4152-b98b-dcdd68bf888f",
+      "name": "GET FILE1",
+      "credentials": {
+        "ftp": {
+          "id": "86pYrQVIVtG9IyiY",
+          "name": "FTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -368
+      ],
+      "id": "9256eb37-3a7b-4932-aee3-bb2342e8d242",
+      "name": "Extract from File1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ec1692d0-91d0-40b2-90f2-b319f5304ba1"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "96641713-9ce9-42c1-b01e-a766ce3a8219",
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "htm",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "75e7cdca-2b1e-411f-980d-dc4043bb17b8",
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "xlsx",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0417f66a-2ff5-4579-8f70-65b2e93de451",
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "xls",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "018b26c2-a3a5-49c3-9661-a880b44f61f7",
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "ods",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -1936,
+        -320
+      ],
+      "id": "662bcbc2-75a2-4c97-80fe-ed86b4169c91",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "xls",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -208
+      ],
+      "id": "551c11c1-a10d-49ff-b0cc-0e5e428feb3b",
+      "name": "Extract from File2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "ods",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -48
+      ],
+      "id": "2af6c5e0-2a5d-4486-bb8c-6e67515ce647",
+      "name": "Extract from File3",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7fa4f26e-cc70-43cd-81db-30c753075b60",
+              "name": "file",
+              "value": "={{ {filename: $binary.data.fileName } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        416
+      ],
+      "id": "81809f91-94ce-43e6-967f-21319229fc76",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1520,
+        912
+      ],
+      "id": "b13a8325-3c00-4555-94ca-b75ce8277a24",
+      "name": "Merge5"
+    },
+    {
+      "parameters": {
+        "jsCode": "let items = [];\nlet filename = null;\n\n// Loop through all input items\nfor (const item of $input.all()) {\n    // Prefer headers if exists, otherwise data\n    items = item.json.headers || item.json.data || [];\n    filename = item.json.filename || null;\n}\n\n// Merge filename into each item\nconst output = items.map(obj => ({ ...obj, filename }));\n\n// Return as n8n expects\nreturn output.map(row => ({ json: row }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1744,
+        912
+      ],
+      "id": "551a49d0-db1a-4f2e-b67d-7251021f623e",
+      "name": "Code in JavaScript7"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "EXEC SBOLive_CCPI.dbo.PO_DETAILS \n    @PO_GLN = '{{ ($json.delivery_location || $json.customer_name || \"\").slice(0,12).replace(/'/g,\"''\") || null }}',\n    @GTIN   = '{{ ($json.sku || \"\").replace(/'/g,\"''\") || null }}',\n    @SKU    = '{{ ($json.sku || \"\").replace(/'/g,\"''\") || null }}',\n    @PRODUCT_NAME = '{{ (($json.description || \"\").split(/Expiry/i)[0].trim()).replace(/'/g,\"''\") || null }}'\n"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        2384,
+        800
+      ],
+      "id": "d33e8445-9462-41e2-aae5-3c33bb78c78b",
+      "name": "GET SKU1",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftSql": {
+          "id": "RPzzhwl7vM19YWll",
+          "name": "INV .86"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2000,
+        912
+      ],
+      "id": "fc1f44a0-a0d3-4ee6-91f7-6e88fc1ab375",
+      "name": "Loop Over Items1",
+      "alwaysOutputData": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2752,
+        896
+      ],
+      "id": "bac6d073-0c99-4812-b372-3ee9ed042fc4",
+      "name": "Merge6"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "EXEC PreProd_DB.dbo.insert_sales_order\n    @GLN      = '{{ $json.GLN }}',\n    @DELIVERY_ADDRESS   = '{{ $json.DELIVERY_ADDRESS }}',\n    @SKU                = '{{ $json.SKU }}',\n    @DESCRIPTION        = '{{ $json.DESCRIPTION }}',\n    @QTY_SOLD           = '{{ $json.QTY_SOLD }}',\n    @SRP                = '{{ $json.SRP }}',\n    @ORDER_DATE         = '{{ $json.ORDER_DATE }}',\n    @DELIVERY_DATE      = '{{ $json.DELIVERY_DATE }}',\n    @CANCELLATION_DATE  = '{{ $json.CANCELLATION_DATE }}',\n    @ORDER_NUMBER       = '{{ $json.ORDER_NUMBER }}',\n    @CONTACT            = '{{ $json.CONTACT }}',\n    @CUSTOMER_CODE      = '{{ $json.CUSTOMER_CODE }}',\n    @WAREHOUSE          = 'PICKLINE',\n    @CITY               = '{{ $json.CITY }}',\n    @UOM                = '{{ $json.UOM }}',\n    @FILE_NAME          = '{{ $json.filename }}';\n"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        3728,
+        880
+      ],
+      "id": "2093a37d-267e-4190-80a9-977f451150eb",
+      "name": "Microsoft SQL3",
+      "credentials": {
+        "microsoftSql": {
+          "id": "XKlmWToTMEHp6Ig2",
+          "name": "PreProd_DB .26"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## INSERT & VALIDATE",
+        "height": 1008,
+        "width": 2800
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        112
+      ],
+      "id": "d9e99cdb-718c-4fed-8b9b-c90da661aa6f",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "23c194fb-7877-4f8a-b2b0-ad0a8f2008e3",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2576,
+        656
+      ],
+      "id": "1aa3f3f1-a423-4204-9f4c-73ecf509bb53",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "=/USERS/Distribution_PO/SalesOrderExtracted/{{ $json.filename }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        3024,
+        144
+      ],
+      "id": "fa8a5eac-5e70-4e47-89e6-15f44b0a7a12",
+      "name": "FTP",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/ErrorFile/{{ $binary.data.fileName }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        3216,
+        144
+      ],
+      "id": "756c4342-6f72-4b16-a953-251aa485cf32",
+      "name": "FTP8",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "delete",
+        "path": "=/USERS/Distribution_PO/SalesOrderExtracted/{{$binary.data.fileName}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        3408,
+        144
+      ],
+      "id": "33f8538e-7080-49f8-95a2-1afff1e1a678",
+      "name": "FTP9",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = [];\nlet error = \"\";\n\nfor (const item of $input.all()) {\n  const j = item.json;\n\n  // Check if all required SAP fields exist\n  const hasSAPData =\n    j.hasOwnProperty(\"Address\") &&\n    j.hasOwnProperty(\"City\") &&\n    j.hasOwnProperty(\"PO_UOM\") &&\n    j.hasOwnProperty(\"PO_GLN\") &&\n    j.hasOwnProperty(\"CUSTOMER_CODE\") &&\n    j.hasOwnProperty(\"SKU\") &&\n    j.hasOwnProperty(\"GTIN\") &&\n    j.hasOwnProperty(\"ClientItemName\");\n\n  const skugtin = j.sku || j.gtin || j.description || \"\";\n  const gln = j.delivery_location || j.delivery_gln || j.delivery_location_gln || j.customer_name || \"\";\n\n  let row = {\n    ...j,\n    status: 'success',\n    message: 'Extracted Successfully'\n  };\n\n  // Priority 1: Missing SAP data\n  if (!hasSAPData) {\n    const message = `SAP Data not found for GLN/Customer - ''${gln}'' AND SKU/GTIN/Description - ''${skugtin}''`\n    row = {\n      ...j,\n      status: 'error',\n      message,\n    };\n\n    error += `<li>${message.replace(/'/g, \"''\")}</li>`\n  }\n    \n  // Priority 2: Missing UOM / Unit Price\n  else if (!j.PO_UOM) {\n    const message = `Unit of Measure not set yet for GLN/Customer - ''${gln}'' AND SKU/GTIN/Description - ''${skugtin}''`\n    row = {\n      ...j,\n      status: 'error',\n      message\n    };\n\n    error += `<li>${message.replace(/'/g, \"''\")}</li>`\n  }\n\n  else if (!j.CUSTOMER_CODE) {\n    const message = `Customer Code not set yet for GLN/Customer - ''${gln}'' AND SKU/GTIN/Description - ''${skugtin}''`\n    row = {\n      ...j,\n      status: 'error',\n      message\n    };\n\n    error += `<li>${message.replace(/'/g, \"''\")}</li>`\n  }\n\n  else if (!j.SKU) {\n    const message = `Item Code not set yet for GLN/Customer - ''${gln}'' AND SKU/GTIN/Description - ''${skugtin}''`\n    row = {\n      ...j,\n      status: 'error',\n      message\n    };\n\n    error += `<li>${message.replace(/'/g, \"''\")}</li>`\n  }\n\n  data.push(row);\n}\n\nreturn {data, error};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        656
+      ],
+      "id": "977c07c8-39a7-4050-8135-408cb3b59cdb",
+      "name": "Code in JavaScript11"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "EXEC msdb.dbo.sp_send_dbmail\n    @profile_name = 'SapEmailer',\n    @recipients = 'rcordial@candycorner.ph',\n    @subject = 'EXTRACTED ERROR',\n    @body = '\n<div style=\"font-family: Arial, sans-serif; font-size: 14px; color: #333;\">\n    <h3 style=\"color:#d9534f;\">Extraction Error Report</h3>\n\n    <p>The following issues were detected during the extraction process:</p>\n\n    <ul>\n        {{ $json.error }}\n    </ul>\n\n    <br/>\n\n    <p><strong>Source File:</strong> LANDMARK MAKATI.pdf</p>\n\n    <p>Regards,<br>\n    <strong>n8n Notification System</strong></p>\n\n    <hr style=\"border:0; border-top:1px solid #ddd; margin-top:10px;\">\n\n    <p style=\"font-size:12px; color:#888;\">\n        This is an automated message generated by your n8n workflow.\n        Please do not reply directly to this email.\n    </p>\n</div>\n',\n    @body_format = 'HTML';\n"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        2832,
+        448
+      ],
+      "id": "4e527220-4b93-4ea7-8cd8-7b1b53b33fc1",
+      "name": "Microsoft SQL1",
+      "credentials": {
+        "microsoftSql": {
+          "id": "JlGtGnbg3SKSzaoY",
+          "name": "MSDB .86"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "fileName": "File.xlsx"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        3024,
+        736
+      ],
+      "id": "7f65261c-6040-41be-b759-56df8eb8d89a",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "jsCode": "const itemsOut = [];\nconst inputItems = $input.all();\n\nfunction sanitize(value) {\n  return String(value || \"\").replace(/'/g, \"''\");\n}\n\nfunction formatDateMMDDYYYY(dateStr) {\n  if (!dateStr) return \"\";\n\n  const monthMap = {\n    JAN: \"01\", FEB: \"02\", MAR: \"03\", APR: \"04\", MAY: \"05\", JUN: \"06\",\n    JUL: \"07\", AUG: \"08\", SEP: \"09\", OCT: \"10\", NOV: \"11\", DEC: \"12\"\n  };\n\n  let dd, mm, yy;\n\n  // Detect separator and format\n  if (dateStr.includes(\"-\")) {\n    const parts = dateStr.split(\"-\");\n    if (parts[0].length === 4) {\n      // YYYY-MM-DD\n      yy = parts[0];\n      mm = parts[1].padStart(2, \"0\");\n      dd = parts[2].padStart(2, \"0\");\n    } else {\n      // DD-MMM-YY\n      dd = parts[0].padStart(2, \"0\");\n      mm = monthMap[parts[1].toUpperCase()] || \"01\";\n      yy = parts[2];\n    }\n  } else if (dateStr.includes(\"/\")) {\n    const parts = dateStr.split(\"/\");\n    if (parts.length !== 3) return \"\";\n    dd = parts[0].padStart(2, \"0\");\n    mm = parts[1].padStart(2, \"0\");\n    yy = parts[2];\n  } else if (dateStr.includes(\".\")) {\n    const parts = dateStr.split(\".\");\n    if (parts.length !== 3) return \"\";\n    dd = parts[0].padStart(2, \"0\");\n    mm = parts[1].padStart(2, \"0\");\n    yy = parts[2];\n  } else {\n    return \"\"; // unsupported format\n  }\n\n  // Handle 2-digit year\n  if (yy.length === 2) {\n    const yearNum = parseInt(yy, 10);\n    yy = yearNum > 50 ? `19${yy}` : `20${yy}`;\n  }\n\n  return `${mm}/${dd}/${yy}`;\n}\n\nfor (const item of inputItems) {\n  const rows = item.json.data || [];\n\n  for (const row of rows) {\n    const new_row = {};\n\n    // Sanitize all fields dynamically\n    for (const key of Object.keys(row)) {\n      new_row[key] = sanitize(row[key]);\n    }\n\n    const fresh_row = {\n      SAP: \"\",\n      GLN: new_row.PO_GLN || \"\",\n      DELIVERY_ADDRESS: new_row.Address || \"\",\n      SKU: new_row.SKU || \"\",\n      DESCRIPTION: new_row.description || \"\",\n      QTY_SOLD: new_row.quantity || new_row.qty_sold || \"\",\n      SRP: new_row.price || new_row.srp || \"\",\n      ORDER_DATE: formatDateMMDDYYYY(new_row.order_date || \"\"),\n\n      ORDER_NUMBER: new_row.order_number || new_row.po_number || \"\",\n      CONTACT: new_row.customer_contact || \"\",\n      CUSTOMER_CODE: new_row.CUSTOMER_CODE || \"\",\n      WAREHOUSE: \"PICKLINE\",\n      CITY: new_row.City,\n      UOM: new_row.PO_UOM || \"\",\n      SHIPPING_FEE: \"\",\n      CART_DISCOUNT: \"\",\n      COUPON: \"\",\n      MODE_OF_PAYMENT: \"\",\n      REMARKS: \"\",\n      EMAIL: \"\",\n      GIFT_WRAPPER_NOTE: \"\",\n      CANDYGRAM: \"\",\n      DELIVERY_DATE: formatDateMMDDYYYY(new_row.delivery_date || \"\"),\n      CANCELLATION_DATE: formatDateMMDDYYYY(new_row.cancellation_date || \"\")\n    };\n\n    itemsOut.push(fresh_row);\n  }\n}\n\nreturn itemsOut;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2832,
+        736
+      ],
+      "id": "b745a525-0d9f-428b-8c23-9fba41aef458",
+      "name": "Code in JavaScript12"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7aa3b2b1-b308-4c42-9f85-5cc615a11762",
+              "name": "filename",
+              "value": "={{ $json.data[0].filename }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2832,
+        592
+      ],
+      "id": "21a0cf30-39d8-4f00-b3fa-ddaee8520ccf",
+      "name": "Edit Fields12"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3376,
+        608
+      ],
+      "id": "ef8f2daa-f1ac-4e35-a7e6-d8f49331a2e6",
+      "name": "Merge11"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/SalesOrderExported/{{ $binary.data.fileName }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        3200,
+        736
+      ],
+      "id": "f8f55393-0f2c-4fd6-ae4f-ceb54630a7e8",
+      "name": "FTP13",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let filename = null\nfor(const item of $input.all()){\n  if(item.json.filename){\n    filename = item.json.filename\n  }\n}\n\nreturn {filename}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3616,
+        608
+      ],
+      "id": "4cc01854-2c76-4b9a-b3bd-189b244c90e3",
+      "name": "Code in JavaScript13"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "rename",
+        "oldPath": "/USERS/Distribution_PO/SalesOrderExported/File.xlsx",
+        "newPath": "=/USERS/Distribution_PO/SalesOrderExported/{{ $json.filename.split('.').slice(0, -1).join('.') }}.xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        3808,
+        672
+      ],
+      "id": "3b876434-4752-404b-ac98-959d9c2b10eb",
+      "name": "FTP14",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "EXEC msdb.dbo.sp_send_dbmail\n    @profile_name = 'SapEmailer',\n    @recipients = 'rcamarig@candycorner.ph',\n    @subject = 'EXTRACTED ERROR',\n    @body = '\n<div style=\"font-family: Arial, sans-serif; font-size: 14px; color: #333;\">\n    <h3 style=\"color:#d9534f;\">Extraction Error Report</h3>\n\n    <p>The following issues were detected during the extraction process:</p>\n\n    <ul>\n        {{ $json.error }}\n    </ul>\n\n    <br/>\n\n    <p><strong>Source File:</strong> LANDMARK MAKATI.pdf</p>\n\n    <p>Regards,<br>\n    <strong>n8n Notification System</strong></p>\n\n    <hr style=\"border:0; border-top:1px solid #ddd; margin-top:10px;\">\n\n    <p style=\"font-size:12px; color:#888;\">\n        This is an automated message generated by your n8n workflow.\n        Please do not reply directly to this email.\n    </p>\n</div>\n',\n    @body_format = 'HTML';\n"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        2832,
+        304
+      ],
+      "id": "3dc22a90-1ec6-4d33-ba17-bc150ffbb247",
+      "name": "Microsoft SQL4",
+      "credentials": {
+        "microsoftSql": {
+          "id": "JlGtGnbg3SKSzaoY",
+          "name": "MSDB .86"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7aa3b2b1-b308-4c42-9f85-5cc615a11762",
+              "name": "filename",
+              "value": "={{ $json.data[0].filename }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2832,
+        144
+      ],
+      "id": "4bbb0695-c3c4-4e70-bdfe-7e998cb39a41",
+      "name": "Edit Fields13"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "delete",
+        "path": "=/USERS/Distribution_PO/SalesOrderExported/{{ $json.filename.split('.').slice(0, -1).join('.') }}.xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        3808,
+        496
+      ],
+      "id": "429d4490-4225-4ebf-86aa-48b6bf6fc96f",
+      "name": "FTP16",
+      "alwaysOutputData": false,
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3440,
+        880
+      ],
+      "id": "4518001f-f5b5-4459-a75c-546e2bfe9bf8",
+      "name": "Loop Over Items3"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3200,
+        880
+      ],
+      "id": "113266d5-8846-4039-be5b-b8e726f773b9",
+      "name": "Merge13"
+    },
+    {
+      "parameters": {
+        "operation": "xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -512
+      ],
+      "id": "640dfad4-9bae-4958-866f-6e38b7c71dd4",
+      "name": "Extract from File4"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "=TASK:\nExtract all item-level fields from the document text.\nMerge all relevant header details into each item object.\nDo NOT include notes, approvals, or other non-item-related fields.\n\nEnsure that each object always contains the field:\n\"customer_name\": \"value\" \n- The value of \"customer_name\" should be taken from the top of the document if present.\n- If \"customer_name\" is also present in a field, it should not overwrite the top-of-document value.\n- Always preserve the extracted value; do not replace it with an empty string.\n\nOutput each item as an object in a JSON array, in this format:\n\n[\n  {\n    \"Field Name\": \"Extracted Value\",\n    \"customer_name\": \"Extracted Value\",\n    \"Remarks\": \"Extracted Value\"\n  },\n  {\n    \"Field Name\": \"Extracted Value\",\n    \"customer_name\": \"Extracted Value\",\n    \"Remarks\": \"Extracted Value\"\n  }\n]\n\nRULES:\n- Keep the field names exactly as they appear in the document.\n- Merge all relevant header fields into each item object.\n- Each object represents one item/row.\n- Output a single JSON array only.\n- No nested objects beyond the top-level per item.\n- Always include \"customer_name\" in every object.\n- Do not include notes, approvals, or non-item-related fields.\n- No explanations, no comments, no markdown.\n",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        512
+      ],
+      "id": "651488bc-0a4e-429f-baf4-9f282f07efdb",
+      "name": "Analyze document",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "37merhsvPEC9fCt7",
+          "name": "n8n 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f2357c3c-7bac-489d-b00b-4b76c126ef88",
+              "name": "data",
+              "value": "={{ $json.content.parts[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1248,
+        512
+      ],
+      "id": "16e654cb-6699-4461-88f1-5811cd7b3ff9",
+      "name": "Edit Fields15"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the input data from the previous node\nconst input = $input.item.json.data;\n\n// Step 1: Remove the ```json and ``` wrappers\nconst cleaned = input.replace(/```json|```/g, \"\").trim();\n\n// Step 2: Parse the string into an actual JSON object\nlet parsed;\ntry {\n    parsed = JSON.parse(cleaned);\n} catch (error) {\n    throw new Error(\"Failed to parse JSON: \" + error.message);\n}\n\n// Step 3: Return as n8n JSON output\nreturn parsed.map(item => ({ json: item }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1056,
+        512
+      ],
+      "id": "f7e798b6-e579-43e9-9d1d-4655c78be8bc",
+      "name": "Code in JavaScript19"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        96,
+        912
+      ],
+      "id": "5b5c3cac-4539-4296-98a0-60d68aff92eb",
+      "name": "Merge16"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1807db2-ee04-4267-ad2a-20bd3c047aa7",
+              "name": "filename",
+              "value": "={{$binary.data.fileName}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1440,
+        928
+      ],
+      "id": "6dd9293c-5d05-486c-9af0-cbe4e3e724bf",
+      "name": "Edit Fields16"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "/USERS/Distribution_PO/Mapping/mapping.xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        288
+      ],
+      "id": "2b3b2435-31f0-40f7-a635-3ada4336593b",
+      "name": "FTP1",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1248,
+        288
+      ],
+      "id": "f0f67e65-e391-4ec3-a9df-f35606c51d99",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "=TASK:\nExtract the following fields from the document text:\n\nTop-level headers:\n- Entry Date -> PO Date -> Delivery Date -> order_date\n- customer_name\n- Document ID -> po_number\n- Location: Delivery To -> gln\n\nItem-level fields:\n- sku -> gtin -> plu -> sku/gtin\n- description\n- price\n- quantity\n\nSPECIAL RULE:\n- UPC codes found in the document must NOT be considered as SKU or GTIN.\n- Only use actual SKU/GTIN/PLU identifiers for item-level sku/gtin.\n\nOUTPUT:\nReturn ONLY a valid JSON object in this exact structure:\n\n{\n  \"data\": {\n    \"headers\": {\n      \"customer_name\": \"\",\n      \"po_number\": \"\",\n      \"gln\": \"\"\n    },\n    \"items\": [\n      {\n        \"sku/gtin\": \"\",\n        \"description\": \"\",\n        \"price\": \"\",\n        \"quantity\": \"\"\n      }\n    ]\n  }\n}\n\nRULES:\n- Extract **exactly** the fields listed above; do not add extra fields.\n- Place top-level fields in the \"headers\" object.\n- Place item-level fields in the \"items\" array; preserve one object per item row.\n- Use only the document text as the source of data.\n- Enforce the UPC exception: do not map UPC values as SKU/GTIN.\n- Do not perform any computations unless explicitly needed.\n- Return clean values (remove extra spaces, symbols if not part of the field).\n- Do not include explanations, comments, or markdown.\n",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -2224,
+        -256
+      ],
+      "id": "0185894c-ae84-466d-9912-8cac76666955",
+      "name": "Analyze document1",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "z8jWgbeOyLGnYTFs",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -784,
+        400
+      ],
+      "id": "f70a63a9-d37c-45d6-aa12-2a4413ec2020",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all input items\nconst inputItems = $input.all();\n\n// Separate mapping fields and extracted data\nconst mappingFields = inputItems\n    .filter(item => item.json.mapping_fields)\n    .map(item => item.json.mapping_fields);\n\nconst extractedData = inputItems\n    .filter(item => !item.json.mapping_fields)\n    .map(item => item.json);\n\nconst customer_name = extractedData[0]?.customer_name || \"\";\n\nconst fields = mappingFields.filter(item => \n    item[\"COMMON NAME\"] && customer_name && item[\"COMMON NAME\"].toLowerCase().includes(customer_name.toLowerCase())\n);\n\nconst fieldsAsString = fields.map(item => `${item[\"TEXT FIELD\"]} -> ${item[\"OUTPUT FIELD\"]}`).join(\"\\n\");\n\nreturn [\n    {\n        json: {\n            mapping_fields: fields,\n            mapping_strings: fieldsAsString,\n            extracted_data: JSON.stringify(extractedData)\n        }\n    }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        400
+      ],
+      "id": "a316d3bf-9368-46c1-8aa4-c996c784e1fe",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "175ec2f7-7241-4e0d-aaff-a7d39194923c",
+              "name": "mapping_fields",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1056,
+        288
+      ],
+      "id": "768a1105-c016-4d3f-b8bc-34e8aea541cc",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=TASK:\nYou are given two inputs:\n\n1. MAPPING FIELDS:\n{{ $json.mapping_strings }}\nEach mapping field has:\n- \"Text Field\" (the key to look for in extracted data)\n- \"Output Field\" (the name to use in the final JSON)\n\n2. EXTRACTED DATA:\n{{ $json.extracted_data }}\n\nGOAL:\n- For each item in EXTRACTED DATA, find values that match the \"Text Field\" in MAPPING FIELDS.\n- Matching should be case-insensitive and trimmed for extra spaces.\n- Use the corresponding \"Output Field\" as the property name in the final JSON.\n- Do NOT change any extracted values; preserve all existing values exactly as they appear, including customer_name.\n- Ensure every object has the same set of properties: all Output Fields from the mapping must appear.\n- If a value is missing from the extracted data, use an empty string \"\" for that property.\n- Ignore any extracted data that does not appear in the mapping.\n\nOUTPUT FORMAT:\n[\n  {\n    \"Output Field 1\": \"Extracted Value 1\",\n    \"Output Field 2\": \"Extracted Value 2\",\n    \"customer_name\": \"Extracted Value\",\n    \"Output Field 3\": \"Extracted Value 3\"\n  },\n  {\n    \"Output Field 1\": \"Extracted Value 4\",\n    \"Output Field 2\": \"Extracted Value 5\",\n    \"customer_name\": \"Extracted Value\",\n    \"Output Field 3\": \"Extracted Value 6\"\n  }\n]\n\nRULES:\n- Keep only fields from the mapping, including customer_name, delivery_location if present in the extracted data.\n- Every object must have all Output Fields from the mapping.\n- Use the Output Field as the property name exactly as given.\n- Do NOT modify or overwrite any extracted values.\n- Only return valid JSON. No explanations, no markdown, no extra text.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -176,
+        400
+      ],
+      "id": "3278c56a-9581-4a66-a4bc-c8c6ac724465",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        624
+      ],
+      "id": "a18dc19f-c2c7-41c0-a024-8259e5577ff5",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "37merhsvPEC9fCt7",
+          "name": "n8n 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\n\nfor (const item of $input.all()) {\n    const rawOutput = item.json.output; // AI Agent output string\n\n    if (!rawOutput) continue;\n\n    // Remove ```json markers and trim\n    const cleanString = rawOutput.replace(/^```json\\s*/i, '').replace(/```$/, '').trim();\n\n    // Parse JSON safely\n    let parsed;\n    try {\n        parsed = JSON.parse(cleanString);\n    } catch (err) {\n        throw new Error(`Failed to parse JSON for item: ${err.message}`);\n    }\n\n    // Wrap the array inside an object\n    results.push({ json: { data: parsed } });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        400
+      ],
+      "id": "1a46f87f-6bd4-4598-a979-56792a0d8400",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "464f6098-96dd-47e4-95cb-717b76dbb0b7",
+              "leftValue": "={{ $json.mapping_fields }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -384,
+        400
+      ],
+      "id": "df996107-8ac1-4cbc-99fd-6f15c0d808f8",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "EXEC msdb.dbo.sp_send_dbmail\n    @profile_name = 'SapEmailer',\n    @recipients = 'rcordial@candycorner.ph',\n    @subject = 'EXTRACTED ERROR',\n    @body = '\n<div style=\"font-family: Arial, sans-serif; font-size: 14px; color: #333;\">\n    <h3 style=\"color:#d9534f;\">Extraction Error Report</h3>\n\n    <p>The following issues were detected during the extraction process:</p>\n\n    <ul>\n        MAPPING NOT SET YES\n    </ul>\n\n    <br/>\n\n    <p><strong>Source File:</strong> LANDMARK MAKATI.pdf</p>\n\n    <p>Regards,<br>\n    <strong>n8n Notification System</strong></p>\n\n    <hr style=\"border:0; border-top:1px solid #ddd; margin-top:10px;\">\n\n    <p style=\"font-size:12px; color:#888;\">\n        This is an automated message generated by your n8n workflow.\n        Please do not reply directly to this email.\n    </p>\n</div>\n',\n    @body_format = 'HTML';\n"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        -784,
+        624
+      ],
+      "id": "3d8d727d-c25b-461d-a14e-f26e8be107d6",
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "JlGtGnbg3SKSzaoY",
+          "name": "MSDB .86"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -784,
+        816
+      ],
+      "id": "61b902f2-0e95-4d6e-b5cd-df3f025ca664",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "=/USERS/Distribution_PO/SalesOrder/{{ $json.filename }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        816
+      ],
+      "id": "896848ee-8a7a-4547-8329-a4d19b2babd6",
+      "name": "FTP10",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/ErrorFile/{{ $binary.data.fileName; }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        816
+      ],
+      "id": "8378b641-4f45-4fdb-83c3-fc9f8076f3bf",
+      "name": "FTP11",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "delete",
+        "path": "=/USERS/Distribution_PO/SalesOrder/{{$binary.data.fileName}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        816
+      ],
+      "id": "756dc934-559f-4606-af07-cf4fc52798b5",
+      "name": "FTP12",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "FTP3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FTP4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "GET FILE1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "GET FILES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP6": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FTP5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP3": {
+      "main": [
+        [
+          {
+            "node": "FTP6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP4": {
+      "main": [
+        [
+          {
+            "node": "FTP7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP7": {
+      "main": [
+        [
+          {
+            "node": "FTP5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET FILE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FILES": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FILE": {
+      "main": [
+        [
+          {
+            "node": "SAVE FILE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SAVE FILE": {
+      "main": [
+        [
+          {
+            "node": "DELETE FILE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FILE1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields16",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analyze document",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FTP1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Extract from File4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        []
+      ]
+    },
+    "Extract from File2": {
+      "main": [
+        []
+      ]
+    },
+    "Extract from File3": {
+      "main": [
+        []
+      ]
+    },
+    "FTP5": {
+      "main": [
+        []
+      ]
+    },
+    "Merge5": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript7": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET SKU1": {
+      "main": [
+        [
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript11",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET SKU1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge6": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields13",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript12",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP": {
+      "main": [
+        [
+          {
+            "node": "FTP8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP8": {
+      "main": [
+        [
+          {
+            "node": "FTP9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript11": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL1": {
+      "main": [
+        []
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "FTP13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript12": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge13",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields12": {
+      "main": [
+        [
+          {
+            "node": "Merge11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge11": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript13": {
+      "main": [
+        [
+          {
+            "node": "FTP16",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FTP14",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP14": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields13": {
+      "main": [
+        [
+          {
+            "node": "FTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP13": {
+      "main": [
+        [
+          {
+            "node": "Merge11",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Loop Over Items3": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Microsoft SQL3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge13": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File4": {
+      "main": [
+        []
+      ]
+    },
+    "Analyze document": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields15": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript19",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge16": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript19": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields16": {
+      "main": [
+        [
+          {
+            "node": "Merge16",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "FTP1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Merge16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Microsoft SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP10": {
+      "main": [
+        [
+          {
+            "node": "FTP11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "FTP10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP11": {
+      "main": [
+        [
+          {
+            "node": "FTP12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "308401e8-23f8-44d7-892e-85d469e8ec33",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2cb527069d4d3ca52b3da3b2aacfac15f379254797865e09501859e37ba61ac9"
+  },
+  "id": "iobiJOg63IkhitWu",
+  "tags": []
+}
