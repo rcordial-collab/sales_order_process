@@ -1,0 +1,1227 @@
+{
+  "name": "Extraction",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16a0605c-11a4-4bf7-9061-d614c0f40041",
+              "name": "path",
+              "value": "={{ $json.path }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2240,
+        320
+      ],
+      "id": "476cd451-2422-489a-94bc-6e4b0bfe593d",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2048,
+        320
+      ],
+      "id": "f0954b20-dbf4-457b-a628-52bb75585f61",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2944,
+        352
+      ],
+      "id": "667e53b5-7856-4ef0-877e-90899057d767",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2cec16ab-4eba-4133-815a-ab3ad748fb40",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "19512ac2-4248-46eb-9ac2-c0116d80775f",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "htm",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "94c4d9bd-9b5f-41d4-a4e7-2dc7062ff5e3",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "ods",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "8bb769bf-757b-4e96-a1dd-c2ee6ed13a8f",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "png",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "30be7491-7657-4cd3-a38c-c6e71bd0a00a",
+              "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+              "rightValue": "jpg",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2528,
+        352
+      ],
+      "id": "8a143695-d6c0-4e92-a090-4433c57e429f",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "content": "## List of File",
+        "height": 256,
+        "width": 1616
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3024,
+        272
+      ],
+      "id": "8810f42c-4339-4596-8ca8-f27fd7cb005b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Invalid File Type",
+        "height": 256,
+        "width": 752
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3024,
+        560
+      ],
+      "id": "b90130b1-a15e-4316-b411-de57b20ae73f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "list",
+        "path": "/USERS/Distribution_PO/SalesOrder"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2736,
+        352
+      ],
+      "id": "d1714d64-d1a7-4b33-8162-508c02cf26ce",
+      "name": "GET FILES",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2896,
+        640
+      ],
+      "id": "b9a49ee5-f365-426f-a98e-ace61abb5849",
+      "name": "GET FILE",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/ErrorFile/Invalid File Type - {{ $json.path.split('/').pop(); }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2720,
+        640
+      ],
+      "id": "51f8c22a-1677-4009-9ca8-77a7de5dc9cc",
+      "name": "SAVE FILE",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "delete",
+        "path": "=/USERS/Distribution_PO/SalesOrder/{{$binary.data.fileName}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2528,
+        640
+      ],
+      "id": "d44a4777-0736-4f54-b358-9424f2bc5d48",
+      "name": "DELETE FILE",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "list",
+        "path": "/USERS/Distribution_PO/ExcelBatchUpload"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2992,
+        -320
+      ],
+      "id": "94f263f3-e75f-413a-862d-ac1aa2dc8f3e",
+      "name": "GET FILES1",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16a0605c-11a4-4bf7-9061-d614c0f40041",
+              "name": "path",
+              "value": "={{ $json.path }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2800,
+        -320
+      ],
+      "id": "10cf2ffc-59ce-41e7-b80e-866a25ac4ad6",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "operation": "ods",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1920,
+        -304
+      ],
+      "id": "2af6c5e0-2a5d-4486-bb8c-6e67515ce647",
+      "name": "Extract from File3",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2128,
+        -304
+      ],
+      "id": "b02a7e2b-1fc8-44e3-9e59-7d7ae167215c",
+      "name": "FTP17",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2128,
+        -480
+      ],
+      "id": "5a7d9538-aa0e-40ae-85ba-610e0d07801b",
+      "name": "FTP15",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2128,
+        -640
+      ],
+      "id": "10464d56-d222-43b8-a989-26c994a6fc8a",
+      "name": "FTP2",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2592,
+        -320
+      ],
+      "id": "8bac93e4-e588-4a4d-9639-148d45a0b202",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "operation": "xls",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1920,
+        -480
+      ],
+      "id": "551c11c1-a10d-49ff-b0cc-0e5e428feb3b",
+      "name": "Extract from File2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "75e7cdca-2b1e-411f-980d-dc4043bb17b8",
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "xlsx",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0417f66a-2ff5-4579-8f70-65b2e93de451",
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "xls",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "018b26c2-a3a5-49c3-9661-a880b44f61f7",
+                    "leftValue": "={{ $json.path.substring($json.path.lastIndexOf('.') + 1); }}",
+                    "rightValue": "ods",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -2352,
+        -336
+      ],
+      "id": "662bcbc2-75a2-4c97-80fe-ed86b4169c91",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1920,
+        -640
+      ],
+      "id": "9256eb37-3a7b-4932-aee3-bb2342e8d242",
+      "name": "Extract from File1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1360,
+        -336
+      ],
+      "id": "74285c40-fc4f-4dcf-9505-f1f506e7fa0e",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "/USERS/Distribution_PO/Mapping/excel_key.xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -2128,
+        -784
+      ],
+      "id": "3823d5c5-5231-4038-877d-8b43a103d80c",
+      "name": "FTP19",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "rawData": true
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1920,
+        -784
+      ],
+      "id": "f017d751-57ce-4498-896a-6d2efbe5b832",
+      "name": "Extract from File4",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "let key_fields = [];\nfor (const item of $input.all()){\n  if(item.json){\n    key_fields.push(item.json)\n  }\n}\n\nreturn {key_fields: key_fields}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1744,
+        -784
+      ],
+      "id": "ae00e8de-624a-440f-8d15-62b6f2aed585",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "let extracted = [];\nfor (const item of $input.all()){\n  if(item.json){\n    extracted.push(item.json)\n  }\n}\n\nreturn {extracted: extracted}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1680,
+        -480
+      ],
+      "id": "c425b260-d62f-4dd2-be67-9b7314982130",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "jsCode": "function processExtractedData(data, key_fields_rows) {\n    // Validate input\n    if (\n        !Array.isArray(data) ||\n        data.length === 0 ||\n        !Array.isArray(data[0]?.extracted) ||\n        !Array.isArray(key_fields_rows)\n    ) {\n        return {\n            uniqueLocations: [],\n            uniqueQuantities: [],\n            uniquePrices: [],\n            groups: []\n        };\n    }\n\n    const extractedItems = data[0].extracted;\n\n    // Get field names from Excel row\n    const locationField  = key_fields_rows[0]?.LOCATION_FIELDS || \"Location\";\n    const quantityField  = key_fields_rows[0]?.QUANTITY_FIELDS || \"BuyQty\";\n    const priceField     = key_fields_rows[0]?.PRICE_FIELDS   || \"BuyCost\";\n\n    const locationSet = new Set();\n    const quantitySet = new Set();\n    const priceSet = new Set();\n\n    const groupsMap = new Map();\n\n    extractedItems.forEach(item => {\n        const location = item[locationField];\n        const quantity = Number(item[quantityField]);\n        const price    = Number(item[priceField]);\n\n        // ❌ Skip this item entirely if qty or price is zero or empty\n        if (!quantity || !price) {\n            return;  // <-- This removes ZERO QTY/PRICE rows completely\n        }\n\n        // Collect unique locations\n        if (location != null && location !== \"\") {\n            locationSet.add(location);\n        }\n\n        // Unique quantity\n        quantitySet.add(quantity);\n\n        // Unique price\n        priceSet.add(price);\n\n        // Group by location\n        const groupKey = location || \"\";\n\n        if (!groupsMap.has(groupKey)) {\n            groupsMap.set(groupKey, {\n                groupKey,\n                location: groupKey,\n                items: []\n            });\n        }\n\n        groupsMap.get(groupKey).items.push(item);\n    });\n\n    // Return final result\n    return {\n        uniqueLocations: [...locationSet].sort(),\n        uniqueQuantities: [...quantitySet].sort((a, b) => a - b),\n        uniquePrices: [...priceSet].sort((a, b) => a - b),\n        groups: [...groupsMap.values()]\n    };\n}\n\nlet extracted = null;\nlet key_fields = null;\nlet grouped_data = null;\n\nfor (const item of $input.all()) {\n    if (item.json.extracted) {\n        extracted = item.json.extracted;\n    }\n\n    if (item.json.key_fields) {\n        key_fields = item.json.key_fields;  // Your Excel rows\n    }\n\n    // Process only when both are provided\n    if (extracted && key_fields) {\n        grouped_data = processExtractedData(\n            [{ extracted: extracted }],  // Convert to expected structure\n            key_fields\n        );\n    }\n}\n\nreturn grouped_data;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1152,
+        -336
+      ],
+      "id": "3fae737c-978c-4395-899d-8f5470624953",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0651fb1a-188f-4d5b-8231-6afb6adc3119",
+              "name": "groups",
+              "value": "={{ $json.groups }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -960,
+        -336
+      ],
+      "id": "dfb428e8-090a-4754-9ef7-b38220cdadca",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = [];\n\nfor (const item of $input.all()) {\n  if (item.json.groups) {\n    for (const group of item.json.groups) {\n\n      const now = new Date();\n      const timestamp =\n        now.getFullYear() + \"-\" +\n        String(now.getMonth() + 1).padStart(2, \"0\") + \"-\" +\n        String(now.getDate()).padStart(2, \"0\") + \"_\" +\n        String(now.getHours()).padStart(2, \"0\") + \"-\" +\n        String(now.getMinutes()).padStart(2, \"0\") + \"-\" +\n        String(now.getSeconds()).padStart(2, \"0\");\n\n      const filename = `${group.location}_${timestamp}`;\n      const group_items = group.items;\n\n      items.push({\n        [filename]: group_items  \n      });\n    }\n  }\n}\n\nreturn items;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        -336
+      ],
+      "id": "1035134e-e8d7-4cf2-b459-a09103381df7",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -560,
+        -336
+      ],
+      "id": "7bd42065-37d1-48a1-951e-9cbb46672eb6",
+      "name": "Loop Over Items4"
+    },
+    {
+      "parameters": {
+        "operation": "html",
+        "binaryPropertyName": "=data",
+        "options": {
+          "fileName": "={{ $json.filename }}.htm",
+          "headerRow": true
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        -336
+      ],
+      "id": "de3fae0e-f219-4109-b35e-46209f08241d",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = [];\n\nfor (const item of $input.all()) {\n  const keys = Object.keys(item.json);\n\n  if (keys.length > 0) {\n    const key = keys[0];\n    const valueArray = item.json[key]; // this is the \n    for (const obj of valueArray) {\n      items.push({\n        json: {...obj, filename: key}\n      });\n    }\n  }\n}\n\nreturn items;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        -336
+      ],
+      "id": "ae81c96c-3bab-4c93-a877-6f0c6372a43b",
+      "name": "Code in JavaScript8"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/SalesOrder/{{ $binary.data.fileName }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -336
+      ],
+      "id": "a96355c0-8e5e-4167-be4b-426944215927",
+      "name": "FTP18",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2128,
+        -128
+      ],
+      "id": "a1a59220-2a6b-43a5-a23c-031aa41711d4",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -1920,
+        -128
+      ],
+      "id": "e1295e1d-9359-45db-9d8e-439315ef69d7",
+      "name": "FTP20",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "upload",
+        "path": "=/USERS/Distribution_PO/SalesOrderExtracted/{{ $binary.data.fileName }}"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -1728,
+        -128
+      ],
+      "id": "6a444eeb-0fcd-4a26-ba67-0a0beaa6359e",
+      "name": "FTP21",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "operation": "delete",
+        "path": "={{ $json.path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        -1920,
+        16
+      ],
+      "id": "29e76944-9de1-4f5c-b204-8a5c5ab04392",
+      "name": "FTP22",
+      "credentials": {
+        "sftp": {
+          "id": "9zKdFvcWOBA6YSRp",
+          "name": "SFTP .163"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Excel Converter",
+        "height": 1024,
+        "width": 3280
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3024,
+        -832
+      ],
+      "id": "28d854a6-b260-4571-ae06-0257b7cb8418",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.50.147:5670/webhook/sales_order_saving",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "path",
+              "value": "={{ $json.path }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1792,
+        320
+      ],
+      "id": "4db528f5-1ad5-4c41-be73-e1dcbcb7307e",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "maxTries": 5
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "GET FILES1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET FILES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET FILE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FILES": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FILE": {
+      "main": [
+        [
+          {
+            "node": "SAVE FILE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SAVE FILE": {
+      "main": [
+        [
+          {
+            "node": "DELETE FILE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FILES1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "FTP2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FTP15",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FTP17",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP15": {
+      "main": [
+        [
+          {
+            "node": "Extract from File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP2": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FTP19",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "FTP17": {
+      "main": [
+        [
+          {
+            "node": "Extract from File3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP19": {
+      "main": [
+        [
+          {
+            "node": "Extract from File4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items4": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code in JavaScript8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript8": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "FTP18",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP18": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "FTP20",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FTP22",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FTP20": {
+      "main": [
+        [
+          {
+            "node": "FTP21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "ebe3726a-4d83-4b7b-8fd6-c9d57c5545ca",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2cb527069d4d3ca52b3da3b2aacfac15f379254797865e09501859e37ba61ac9"
+  },
+  "id": "iobiJOg63IkhitWu",
+  "tags": []
+}
